@@ -1,5 +1,4 @@
-const fse = require("./index");
-const memfs = require("memfs");
+const { fse , memfs } = require("./index");
 
 const {vol, writeFileSync, readFileSync} = memfs;
 
@@ -11,5 +10,5 @@ const json = {
 
 vol.fromJSON(json, '/app');
 
-fse.copySync('/README.md', '/text1.txt')
-console.log(readFileSync('/text1.txt', 'utf8'));
+fse.copySync('/app/README.md', '/app/text1.txt')
+console.log(readFileSync('/app/text1.txt', 'utf8'));

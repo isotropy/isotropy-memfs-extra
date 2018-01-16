@@ -1,4 +1,4 @@
-var lalala =
+module.exports =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -293,18 +293,208 @@ var substr = 'ab'.substr(-1) === 'b'
     }
 ;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+/* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(process) {var fs = __webpack_require__(13)
+/* WEBPACK VAR INJECTION */(function(process) {var fs = __webpack_require__(10)
 var polyfills = __webpack_require__(68)
 var legacy = __webpack_require__(70)
 var queue = []
 
-var util = __webpack_require__(11)
+var util = __webpack_require__(12)
 
 function noop () {}
 
@@ -562,197 +752,7 @@ function retry () {
   }
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-// shim for using process in browser
-var process = module.exports = {};
-
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-
-var cachedSetTimeout;
-var cachedClearTimeout;
-
-function defaultSetTimout() {
-    throw new Error('setTimeout has not been defined');
-}
-function defaultClearTimeout () {
-    throw new Error('clearTimeout has not been defined');
-}
-(function () {
-    try {
-        if (typeof setTimeout === 'function') {
-            cachedSetTimeout = setTimeout;
-        } else {
-            cachedSetTimeout = defaultSetTimout;
-        }
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === 'function') {
-            cachedClearTimeout = clearTimeout;
-        } else {
-            cachedClearTimeout = defaultClearTimeout;
-        }
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-} ())
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) {
-        //normal enviroments in sane situations
-        return setTimeout(fun, 0);
-    }
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch(e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch(e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-
-
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) {
-        //normal enviroments in sane situations
-        return clearTimeout(marker);
-    }
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e){
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e){
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-
-
-
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) {
-        return;
-    }
-    draining = false;
-    if (currentQueue.length) {
-        queue = currentQueue.concat(queue);
-    } else {
-        queueIndex = -1;
-    }
-    if (queue.length) {
-        drainQueue();
-    }
-}
-
-function drainQueue() {
-    if (draining) {
-        return;
-    }
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-
-    var len = queue.length;
-    while(len) {
-        currentQueue = queue;
-        queue = [];
-        while (++queueIndex < len) {
-            if (currentQueue) {
-                currentQueue[queueIndex].run();
-            }
-        }
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-
-process.nextTick = function (fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) {
-        for (var i = 1; i < arguments.length; i++) {
-            args[i - 1] = arguments[i];
-        }
-    }
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) {
-        runTimeout(drainQueue);
-    }
-};
-
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function () {
-    this.fun.apply(null, this.array);
-};
-process.title = 'browser';
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ''; // empty string to avoid regexp issues
-process.versions = {};
-
-function noop() {}
-
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-
-process.listeners = function (name) { return [] }
-
-process.binding = function (name) {
-    throw new Error('process.binding is not supported');
-};
-
-process.cwd = function () { return '/' };
-process.chdir = function (dir) {
-    throw new Error('process.chdir is not supported');
-};
-process.umask = function() { return 0; };
-
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 3 */
@@ -841,7 +841,7 @@ module.exports = g;
 "use strict";
 
 const u = __webpack_require__(3).fromPromise
-const fs = __webpack_require__(22)
+const fs = __webpack_require__(33)
 
 function pathExists (path) {
   return fs.access(path).then(() => true).catch(() => false)
@@ -903,11 +903,11 @@ var objectKeys = Object.keys || function (obj) {
 module.exports = Duplex;
 
 /*<replacement>*/
-var util = __webpack_require__(12);
+var util = __webpack_require__(13);
 util.inherits = __webpack_require__(9);
 /*</replacement>*/
 
-var Readable = __webpack_require__(29);
+var Readable = __webpack_require__(28);
 var Writable = __webpack_require__(20);
 
 util.inherits(Duplex, Readable);
@@ -998,9 +998,9 @@ function forEach(xs, f) {
 
 
 
-var base64 = __webpack_require__(42)
-var ieee754 = __webpack_require__(43)
-var isArray = __webpack_require__(24)
+var base64 = __webpack_require__(41)
+var ieee754 = __webpack_require__(42)
+var isArray = __webpack_require__(23)
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -2811,6 +2811,55 @@ if (typeof Object.create === 'function') {
 
 /***/ }),
 /* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var node_1 = __webpack_require__(22);
+var volume_1 = __webpack_require__(44);
+var _a = __webpack_require__(66), fsSyncMethods = _a.fsSyncMethods, fsAsyncMethods = _a.fsAsyncMethods;
+var constants_1 = __webpack_require__(17);
+var F_OK = constants_1.constants.F_OK, R_OK = constants_1.constants.R_OK, W_OK = constants_1.constants.W_OK, X_OK = constants_1.constants.X_OK;
+exports.Volume = volume_1.Volume;
+// Default volume.
+exports.vol = new volume_1.Volume;
+function createFsFromVolume(vol) {
+    var fs = { F_OK: F_OK, R_OK: R_OK, W_OK: W_OK, X_OK: X_OK, constants: constants_1.constants, Stats: node_1.Stats };
+    // Bind FS methods.
+    for (var _i = 0, fsSyncMethods_1 = fsSyncMethods; _i < fsSyncMethods_1.length; _i++) {
+        var method = fsSyncMethods_1[_i];
+        if (typeof vol[method] === 'function')
+            fs[method] = vol[method].bind(vol);
+    }
+    for (var _a = 0, fsAsyncMethods_1 = fsAsyncMethods; _a < fsAsyncMethods_1.length; _a++) {
+        var method = fsAsyncMethods_1[_a];
+        if (typeof vol[method] === 'function')
+            fs[method] = vol[method].bind(vol);
+    }
+    fs.StatWatcher = vol.StatWatcher;
+    fs.FSWatcher = vol.FSWatcher;
+    fs.WriteStream = vol.WriteStream;
+    fs.ReadStream = vol.ReadStream;
+    fs._toUnixTimestamp = volume_1.toUnixTimestamp;
+    return fs;
+}
+exports.createFsFromVolume = createFsFromVolume;
+exports.fs = createFsFromVolume(exports.vol);
+module.exports = __assign({}, module.exports, exports.fs);
+module.exports.semantic = true;
+
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports) {
 
 // Copyright Joyent, Inc. and other Node contributors.
@@ -3118,7 +3167,7 @@ function isUndefined(arg) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
@@ -3646,7 +3695,7 @@ function isPrimitive(arg) {
 }
 exports.isPrimitive = isPrimitive;
 
-exports.isBuffer = __webpack_require__(48);
+exports.isBuffer = __webpack_require__(47);
 
 function objectToString(o) {
   return Object.prototype.toString.call(o);
@@ -3690,7 +3739,7 @@ exports.log = function() {
  *     prototype.
  * @param {function} superCtor Constructor function to inherit prototype from.
  */
-exports.inherits = __webpack_require__(49);
+exports.inherits = __webpack_require__(48);
 
 exports._extend = function(origin, add) {
   // Don't do anything if add isn't an object
@@ -3708,10 +3757,10 @@ function hasOwnProperty(obj, prop) {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(1)))
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {// Copyright Joyent, Inc. and other Node contributors.
@@ -3825,55 +3874,6 @@ function objectToString(o) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8).Buffer))
 
 /***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-var node_1 = __webpack_require__(23);
-var volume_1 = __webpack_require__(45);
-var _a = __webpack_require__(67), fsSyncMethods = _a.fsSyncMethods, fsAsyncMethods = _a.fsAsyncMethods;
-var constants_1 = __webpack_require__(17);
-var F_OK = constants_1.constants.F_OK, R_OK = constants_1.constants.R_OK, W_OK = constants_1.constants.W_OK, X_OK = constants_1.constants.X_OK;
-exports.Volume = volume_1.Volume;
-// Default volume.
-exports.vol = new volume_1.Volume;
-function createFsFromVolume(vol) {
-    var fs = { F_OK: F_OK, R_OK: R_OK, W_OK: W_OK, X_OK: X_OK, constants: constants_1.constants, Stats: node_1.Stats };
-    // Bind FS methods.
-    for (var _i = 0, fsSyncMethods_1 = fsSyncMethods; _i < fsSyncMethods_1.length; _i++) {
-        var method = fsSyncMethods_1[_i];
-        if (typeof vol[method] === 'function')
-            fs[method] = vol[method].bind(vol);
-    }
-    for (var _a = 0, fsAsyncMethods_1 = fsAsyncMethods; _a < fsAsyncMethods_1.length; _a++) {
-        var method = fsAsyncMethods_1[_a];
-        if (typeof vol[method] === 'function')
-            fs[method] = vol[method].bind(vol);
-    }
-    fs.StatWatcher = vol.StatWatcher;
-    fs.FSWatcher = vol.FSWatcher;
-    fs.WriteStream = vol.WriteStream;
-    fs.ReadStream = vol.ReadStream;
-    fs._toUnixTimestamp = volume_1.toUnixTimestamp;
-    return fs;
-}
-exports.createFsFromVolume = createFsFromVolume;
-exports.fs = createFsFromVolume(exports.vol);
-module.exports = __assign({}, module.exports, exports.fs);
-module.exports.semantic = true;
-
-
-/***/ }),
 /* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -3922,7 +3922,7 @@ function nextTick(fn, arg1, arg2, arg3) {
   }
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 15 */
@@ -4130,7 +4130,7 @@ function isBuffer(b) {
 // ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-var util = __webpack_require__(11);
+var util = __webpack_require__(12);
 var hasOwn = Object.prototype.hasOwnProperty;
 var pSlice = Array.prototype.slice;
 var functionsHaveNames = (function () {
@@ -4559,13 +4559,13 @@ var objectKeys = Object.keys || function (obj) {
 /* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(29);
+exports = module.exports = __webpack_require__(28);
 exports.Stream = exports;
 exports.Readable = exports;
 exports.Writable = __webpack_require__(20);
 exports.Duplex = __webpack_require__(7);
-exports.Transform = __webpack_require__(33);
-exports.PassThrough = __webpack_require__(54);
+exports.Transform = __webpack_require__(32);
+exports.PassThrough = __webpack_require__(53);
 
 
 /***/ }),
@@ -4639,18 +4639,18 @@ var Duplex;
 Writable.WritableState = WritableState;
 
 /*<replacement>*/
-var util = __webpack_require__(12);
+var util = __webpack_require__(13);
 util.inherits = __webpack_require__(9);
 /*</replacement>*/
 
 /*<replacement>*/
 var internalUtil = {
-  deprecate: __webpack_require__(53)
+  deprecate: __webpack_require__(52)
 };
 /*</replacement>*/
 
 /*<replacement>*/
-var Stream = __webpack_require__(30);
+var Stream = __webpack_require__(29);
 /*</replacement>*/
 
 /*<replacement>*/
@@ -4664,7 +4664,7 @@ function _isUint8Array(obj) {
 }
 /*</replacement>*/
 
-var destroyImpl = __webpack_require__(31);
+var destroyImpl = __webpack_require__(30);
 
 util.inherits(Writable, Stream);
 
@@ -5237,7 +5237,7 @@ Writable.prototype._destroy = function (err, cb) {
   this.end();
   cb(err);
 };
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(27).setImmediate, __webpack_require__(5)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(26).setImmediate, __webpack_require__(5)))
 
 /***/ }),
 /* 21 */
@@ -5262,119 +5262,6 @@ module.exports = {
 /* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-// This is adapted from https://github.com/normalize/mz
-// Copyright (c) 2014-2016 Jonathan Ong me@jongleberry.com and Contributors
-const u = __webpack_require__(3).fromCallback
-const fs = __webpack_require__(1)
-
-const api = [
-  'access',
-  'appendFile',
-  'chmod',
-  'chown',
-  'close',
-  'copyFile',
-  'fchmod',
-  'fchown',
-  'fdatasync',
-  'fstat',
-  'fsync',
-  'ftruncate',
-  'futimes',
-  'lchown',
-  'link',
-  'lstat',
-  'mkdir',
-  'mkdtemp',
-  'open',
-  'readFile',
-  'readdir',
-  'readlink',
-  'realpath',
-  'rename',
-  'rmdir',
-  'stat',
-  'symlink',
-  'truncate',
-  'unlink',
-  'utimes',
-  'writeFile'
-].filter(key => {
-  // Some commands are not available on some systems. Ex:
-  // fs.copyFile was added in Node.js v8.5.0
-  // fs.mkdtemp was added in Node.js v5.10.0
-  // fs.lchown is not available on at least some Linux
-  return typeof fs[key] === 'function'
-})
-
-// Export all keys:
-Object.keys(fs).forEach(key => {
-  exports[key] = fs[key]
-})
-
-// Universalify async methods:
-api.forEach(method => {
-  exports[method] = u(fs[method])
-})
-
-// We differ from mz/fs in that we still ship the old, broken, fs.exists()
-// since we are a drop-in replacement for the native module
-exports.exists = function (filename, callback) {
-  if (typeof callback === 'function') {
-    return fs.exists(filename, callback)
-  }
-  return new Promise(resolve => {
-    return fs.exists(filename, resolve)
-  })
-}
-
-// fs.read() & fs.write need special treatment due to multiple callback args
-
-exports.read = function (fd, buffer, offset, length, position, callback) {
-  if (typeof callback === 'function') {
-    return fs.read(fd, buffer, offset, length, position, callback)
-  }
-  return new Promise((resolve, reject) => {
-    fs.read(fd, buffer, offset, length, position, (err, bytesRead, buffer) => {
-      if (err) return reject(err)
-      resolve({ bytesRead, buffer })
-    })
-  })
-}
-
-// Function signature can be
-// fs.write(fd, buffer[, offset[, length[, position]]], callback)
-// OR
-// fs.write(fd, string[, position[, encoding]], callback)
-// so we need to handle both cases
-exports.write = function (fd, buffer, a, b, c, callback) {
-  if (typeof arguments[arguments.length - 1] === 'function') {
-    return fs.write(fd, buffer, a, b, c, callback)
-  }
-
-  // Check for old, depricated fs.write(fd, string[, position[, encoding]], callback)
-  if (typeof buffer === 'string') {
-    return new Promise((resolve, reject) => {
-      fs.write(fd, buffer, a, b, (err, bytesWritten, buffer) => {
-        if (err) return reject(err)
-        resolve({ bytesWritten, buffer })
-      })
-    })
-  }
-
-  return new Promise((resolve, reject) => {
-    fs.write(fd, buffer, a, b, c, (err, bytesWritten, buffer) => {
-      if (err) return reject(err)
-      resolve({ bytesWritten, buffer })
-    })
-  })
-}
-
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
-
 "use strict";
 /* WEBPACK VAR INJECTION */(function(Buffer) {
 var __extends = (this && this.__extends) || (function () {
@@ -5388,9 +5275,9 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var process_1 = __webpack_require__(25);
+var process_1 = __webpack_require__(24);
 var constants_1 = __webpack_require__(17);
-var events_1 = __webpack_require__(10);
+var events_1 = __webpack_require__(11);
 var S_IFMT = constants_1.constants.S_IFMT, S_IFDIR = constants_1.constants.S_IFDIR, S_IFREG = constants_1.constants.S_IFREG, S_IFBLK = constants_1.constants.S_IFBLK, S_IFCHR = constants_1.constants.S_IFCHR, S_IFLNK = constants_1.constants.S_IFLNK, S_IFIFO = constants_1.constants.S_IFIFO, S_IFSOCK = constants_1.constants.S_IFSOCK, O_APPEND = constants_1.constants.O_APPEND;
 exports.SEP = '/';
 /**
@@ -5856,7 +5743,7 @@ exports.Stats = Stats;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8).Buffer))
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ (function(module, exports) {
 
 var toString = {}.toString;
@@ -5867,7 +5754,7 @@ module.exports = Array.isArray || function (arr) {
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5878,7 +5765,7 @@ function createProcess(p) {
     if (p === void 0) { p = process; }
     if (!p) {
         try {
-            p = __webpack_require__(2);
+            p = __webpack_require__(1);
         }
         catch (e) { }
     }
@@ -5891,16 +5778,16 @@ function createProcess(p) {
     if (!p.cwd)
         p.cwd = function () { return '/'; };
     if (!p.nextTick)
-        p.nextTick = __webpack_require__(26).default;
+        p.nextTick = __webpack_require__(25).default;
     return p;
 }
 exports.createProcess = createProcess;
 exports.default = createProcess();
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5914,10 +5801,10 @@ else
     _setImmediate = setTimeout;
 exports.default = _setImmediate;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(27).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(26).setImmediate))
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var apply = Function.prototype.apply;
@@ -5970,13 +5857,13 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(44);
+__webpack_require__(43);
 exports.setImmediate = setImmediate;
 exports.clearImmediate = clearImmediate;
 
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Copyright Joyent, Inc. and other Node contributors.
@@ -6002,15 +5889,15 @@ exports.clearImmediate = clearImmediate;
 
 module.exports = Stream;
 
-var EE = __webpack_require__(10).EventEmitter;
+var EE = __webpack_require__(11).EventEmitter;
 var inherits = __webpack_require__(9);
 
 inherits(Stream, EE);
 Stream.Readable = __webpack_require__(19);
-Stream.Writable = __webpack_require__(55);
-Stream.Duplex = __webpack_require__(56);
-Stream.Transform = __webpack_require__(57);
-Stream.PassThrough = __webpack_require__(58);
+Stream.Writable = __webpack_require__(54);
+Stream.Duplex = __webpack_require__(55);
+Stream.Transform = __webpack_require__(56);
+Stream.PassThrough = __webpack_require__(57);
 
 // Backwards-compat with node 0.4.x
 Stream.Stream = Stream;
@@ -6109,7 +5996,7 @@ Stream.prototype.pipe = function(dest, options) {
 
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6144,7 +6031,7 @@ var processNextTick = __webpack_require__(14);
 module.exports = Readable;
 
 /*<replacement>*/
-var isArray = __webpack_require__(24);
+var isArray = __webpack_require__(23);
 /*</replacement>*/
 
 /*<replacement>*/
@@ -6154,7 +6041,7 @@ var Duplex;
 Readable.ReadableState = ReadableState;
 
 /*<replacement>*/
-var EE = __webpack_require__(10).EventEmitter;
+var EE = __webpack_require__(11).EventEmitter;
 
 var EElistenerCount = function (emitter, type) {
   return emitter.listeners(type).length;
@@ -6162,7 +6049,7 @@ var EElistenerCount = function (emitter, type) {
 /*</replacement>*/
 
 /*<replacement>*/
-var Stream = __webpack_require__(30);
+var Stream = __webpack_require__(29);
 /*</replacement>*/
 
 // TODO(bmeurer): Change this back to const once hole checks are
@@ -6179,12 +6066,12 @@ function _isUint8Array(obj) {
 /*</replacement>*/
 
 /*<replacement>*/
-var util = __webpack_require__(12);
+var util = __webpack_require__(13);
 util.inherits = __webpack_require__(9);
 /*</replacement>*/
 
 /*<replacement>*/
-var debugUtil = __webpack_require__(51);
+var debugUtil = __webpack_require__(50);
 var debug = void 0;
 if (debugUtil && debugUtil.debuglog) {
   debug = debugUtil.debuglog('stream');
@@ -6193,8 +6080,8 @@ if (debugUtil && debugUtil.debuglog) {
 }
 /*</replacement>*/
 
-var BufferList = __webpack_require__(52);
-var destroyImpl = __webpack_require__(31);
+var BufferList = __webpack_require__(51);
+var destroyImpl = __webpack_require__(30);
 var StringDecoder;
 
 util.inherits(Readable, Stream);
@@ -6277,7 +6164,7 @@ function ReadableState(options, stream) {
   this.decoder = null;
   this.encoding = null;
   if (options.encoding) {
-    if (!StringDecoder) StringDecoder = __webpack_require__(32).StringDecoder;
+    if (!StringDecoder) StringDecoder = __webpack_require__(31).StringDecoder;
     this.decoder = new StringDecoder(options.encoding);
     this.encoding = options.encoding;
   }
@@ -6433,7 +6320,7 @@ Readable.prototype.isPaused = function () {
 
 // backwards compatibility.
 Readable.prototype.setEncoding = function (enc) {
-  if (!StringDecoder) StringDecoder = __webpack_require__(32).StringDecoder;
+  if (!StringDecoder) StringDecoder = __webpack_require__(31).StringDecoder;
   this._readableState.decoder = new StringDecoder(enc);
   this._readableState.encoding = enc;
   return this;
@@ -7120,17 +7007,17 @@ function indexOf(xs, x) {
   }
   return -1;
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(1)))
+
+/***/ }),
+/* 29 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(11).EventEmitter;
+
 
 /***/ }),
 /* 30 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(10).EventEmitter;
-
-
-/***/ }),
-/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7208,7 +7095,7 @@ module.exports = {
 };
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7486,7 +7373,7 @@ function simpleEnd(buf) {
 }
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7560,7 +7447,7 @@ module.exports = Transform;
 var Duplex = __webpack_require__(7);
 
 /*<replacement>*/
-var util = __webpack_require__(12);
+var util = __webpack_require__(13);
 util.inherits = __webpack_require__(9);
 /*</replacement>*/
 
@@ -7706,13 +7593,126 @@ function done(stream, er, data) {
 }
 
 /***/ }),
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// This is adapted from https://github.com/normalize/mz
+// Copyright (c) 2014-2016 Jonathan Ong me@jongleberry.com and Contributors
+const u = __webpack_require__(3).fromCallback
+const fs = __webpack_require__(2)
+
+const api = [
+  'access',
+  'appendFile',
+  'chmod',
+  'chown',
+  'close',
+  'copyFile',
+  'fchmod',
+  'fchown',
+  'fdatasync',
+  'fstat',
+  'fsync',
+  'ftruncate',
+  'futimes',
+  'lchown',
+  'link',
+  'lstat',
+  'mkdir',
+  'mkdtemp',
+  'open',
+  'readFile',
+  'readdir',
+  'readlink',
+  'realpath',
+  'rename',
+  'rmdir',
+  'stat',
+  'symlink',
+  'truncate',
+  'unlink',
+  'utimes',
+  'writeFile'
+].filter(key => {
+  // Some commands are not available on some systems. Ex:
+  // fs.copyFile was added in Node.js v8.5.0
+  // fs.mkdtemp was added in Node.js v5.10.0
+  // fs.lchown is not available on at least some Linux
+  return typeof fs[key] === 'function'
+})
+
+// Export all keys:
+Object.keys(fs).forEach(key => {
+  exports[key] = fs[key]
+})
+
+// Universalify async methods:
+api.forEach(method => {
+  exports[method] = u(fs[method])
+})
+
+// We differ from mz/fs in that we still ship the old, broken, fs.exists()
+// since we are a drop-in replacement for the native module
+exports.exists = function (filename, callback) {
+  if (typeof callback === 'function') {
+    return fs.exists(filename, callback)
+  }
+  return new Promise(resolve => {
+    return fs.exists(filename, resolve)
+  })
+}
+
+// fs.read() & fs.write need special treatment due to multiple callback args
+
+exports.read = function (fd, buffer, offset, length, position, callback) {
+  if (typeof callback === 'function') {
+    return fs.read(fd, buffer, offset, length, position, callback)
+  }
+  return new Promise((resolve, reject) => {
+    fs.read(fd, buffer, offset, length, position, (err, bytesRead, buffer) => {
+      if (err) return reject(err)
+      resolve({ bytesRead, buffer })
+    })
+  })
+}
+
+// Function signature can be
+// fs.write(fd, buffer[, offset[, length[, position]]], callback)
+// OR
+// fs.write(fd, string[, position[, encoding]], callback)
+// so we need to handle both cases
+exports.write = function (fd, buffer, a, b, c, callback) {
+  if (typeof arguments[arguments.length - 1] === 'function') {
+    return fs.write(fd, buffer, a, b, c, callback)
+  }
+
+  // Check for old, depricated fs.write(fd, string[, position[, encoding]], callback)
+  if (typeof buffer === 'string') {
+    return new Promise((resolve, reject) => {
+      fs.write(fd, buffer, a, b, (err, bytesWritten, buffer) => {
+        if (err) return reject(err)
+        resolve({ bytesWritten, buffer })
+      })
+    })
+  }
+
+  return new Promise((resolve, reject) => {
+    fs.write(fd, buffer, a, b, c, (err, bytesWritten, buffer) => {
+      if (err) return reject(err)
+      resolve({ bytesWritten, buffer })
+    })
+  })
+}
+
+
+/***/ }),
 /* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var fs = __webpack_require__(13)
+var fs = __webpack_require__(10)
 
 module.exports = clone(fs)
 
@@ -7740,7 +7740,7 @@ function clone (obj) {
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {
 
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const path = __webpack_require__(0)
 const mkdirp = __webpack_require__(4).mkdirs
 const pathExists = __webpack_require__(6).pathExists
@@ -8003,7 +8003,7 @@ function isSrcSubdir (src, dest) {
 
 module.exports = copy
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 36 */
@@ -8044,7 +8044,7 @@ module.exports = {
 "use strict";
 
 
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const os = __webpack_require__(74)
 const path = __webpack_require__(0)
 
@@ -8157,53 +8157,33 @@ module.exports = function (size) {
 "use strict";
 
 
-const assign = __webpack_require__(41)
+const memfs = __webpack_require__(10);
+const assign = __webpack_require__(67);
 
-const fs = {}
+const fs = {};
 
 // Export graceful-fs:
-assign(fs, __webpack_require__(22))
+assign(fs, __webpack_require__(33));
 // Export extra methods:
-assign(fs, __webpack_require__(71))
-assign(fs, __webpack_require__(38))
-assign(fs, __webpack_require__(4))
-assign(fs, __webpack_require__(16))
-assign(fs, __webpack_require__(77))
-assign(fs, __webpack_require__(81))
-assign(fs, __webpack_require__(82))
-assign(fs, __webpack_require__(83))
-assign(fs, __webpack_require__(84))
-assign(fs, __webpack_require__(90))
-assign(fs, __webpack_require__(6))
+assign(fs, __webpack_require__(71));
+assign(fs, __webpack_require__(38));
+assign(fs, __webpack_require__(4));
+assign(fs, __webpack_require__(16));
+assign(fs, __webpack_require__(77));
+assign(fs, __webpack_require__(81));
+assign(fs, __webpack_require__(82));
+assign(fs, __webpack_require__(83));
+assign(fs, __webpack_require__(84));
+assign(fs, __webpack_require__(90));
+assign(fs, __webpack_require__(6));
 
-module.exports = fs
-
+module.exports = {
+  fse: fs,
+  memfs
+}
 
 /***/ }),
 /* 41 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-// simple mutable assign
-function assign () {
-  const args = [].slice.call(arguments).filter(i => i)
-  const dest = args.shift()
-  args.forEach(src => {
-    Object.keys(src).forEach(key => {
-      dest[key] = src[key]
-    })
-  })
-
-  return dest
-}
-
-module.exports = assign
-
-
-/***/ }),
-/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8324,7 +8304,7 @@ function fromByteArray (uint8) {
 
 
 /***/ }),
-/* 43 */
+/* 42 */
 /***/ (function(module, exports) {
 
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
@@ -8414,7 +8394,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 
 /***/ }),
-/* 44 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -8604,10 +8584,10 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(1)))
 
 /***/ }),
-/* 45 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8625,17 +8605,17 @@ var __extends = (this && this.__extends) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 var path_1 = __webpack_require__(0);
 var pathModule = __webpack_require__(0);
-var node_1 = __webpack_require__(23);
+var node_1 = __webpack_require__(22);
 var buffer_1 = __webpack_require__(8);
-var setImmediate_1 = __webpack_require__(26);
-var process_1 = __webpack_require__(25);
-var extend = __webpack_require__(46);
-var errors = __webpack_require__(47);
-var setTimeoutUnref_1 = __webpack_require__(50);
-var stream_1 = __webpack_require__(28);
-var util = __webpack_require__(11);
+var setImmediate_1 = __webpack_require__(25);
+var process_1 = __webpack_require__(24);
+var extend = __webpack_require__(45);
+var errors = __webpack_require__(46);
+var setTimeoutUnref_1 = __webpack_require__(49);
+var stream_1 = __webpack_require__(27);
+var util = __webpack_require__(12);
 var constants_1 = __webpack_require__(17);
-var events_1 = __webpack_require__(10);
+var events_1 = __webpack_require__(11);
 var O_RDONLY = constants_1.constants.O_RDONLY, O_WRONLY = constants_1.constants.O_WRONLY, O_RDWR = constants_1.constants.O_RDWR, O_CREAT = constants_1.constants.O_CREAT, O_EXCL = constants_1.constants.O_EXCL, O_NOCTTY = constants_1.constants.O_NOCTTY, O_TRUNC = constants_1.constants.O_TRUNC, O_APPEND = constants_1.constants.O_APPEND, O_DIRECTORY = constants_1.constants.O_DIRECTORY, O_NOATIME = constants_1.constants.O_NOATIME, O_NOFOLLOW = constants_1.constants.O_NOFOLLOW, O_SYNC = constants_1.constants.O_SYNC, O_DIRECT = constants_1.constants.O_DIRECT, O_NONBLOCK = constants_1.constants.O_NONBLOCK, F_OK = constants_1.constants.F_OK, R_OK = constants_1.constants.R_OK, W_OK = constants_1.constants.W_OK, X_OK = constants_1.constants.X_OK;
 var sep, relative;
 if (pathModule.posix) {
@@ -8855,7 +8835,7 @@ function getPathFromURLPosix(url) {
 function pathToFilename(path) {
     if ((typeof path !== 'string') && !buffer_1.Buffer.isBuffer(path)) {
         try {
-            if (!(path instanceof __webpack_require__(59).URL))
+            if (!(path instanceof __webpack_require__(58).URL))
                 throw new TypeError(ERRSTR.PATH_STR);
         }
         catch (err) {
@@ -8875,7 +8855,7 @@ var resolve = function (filename, base) {
 };
 if (isWin) {
     var _resolve_1 = resolve;
-    var unixify_1 = __webpack_require__(66).unixify;
+    var unixify_1 = __webpack_require__(65).unixify;
     resolve = function (filename, base) { return unixify_1(_resolve_1(filename, base)); };
 }
 function filenameToSteps(filename, base) {
@@ -10645,7 +10625,7 @@ exports.FSWatcher = FSWatcher;
 
 
 /***/ }),
-/* 46 */
+/* 45 */
 /***/ (function(module, exports) {
 
 
@@ -10665,7 +10645,7 @@ function extend(a, b) {
 module.exports = extend;
 
 /***/ }),
-/* 47 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10721,7 +10701,7 @@ var AssertionError = function (_Error) {
         if (options.message) {
             var _this2 = _possibleConstructorReturn(this, (AssertionError.__proto__ || Object.getPrototypeOf(AssertionError)).call(this, options.message));
         } else {
-            if (util === null) util = __webpack_require__(11);
+            if (util === null) util = __webpack_require__(12);
 
             var _this2 = _possibleConstructorReturn(this, (AssertionError.__proto__ || Object.getPrototypeOf(AssertionError)).call(this, util.inspect(options.actual).slice(0, 128) + ' ' + (options.operator + ' ' + util.inspect(options.expected).slice(0, 128))));
         }
@@ -10749,7 +10729,7 @@ function message(key, args) {
     if (typeof msg === 'function') {
         fmt = msg;
     } else {
-        if (util === null) util = __webpack_require__(11);
+        if (util === null) util = __webpack_require__(12);
         fmt = util.format;
         if (args === undefined || args.length === 0) return msg;
         args.unshift(msg);
@@ -10939,7 +10919,7 @@ function bufferOutOfBounds(name, isWriting) {
 }
 
 /***/ }),
-/* 48 */
+/* 47 */
 /***/ (function(module, exports) {
 
 module.exports = function isBuffer(arg) {
@@ -10950,7 +10930,7 @@ module.exports = function isBuffer(arg) {
 }
 
 /***/ }),
-/* 49 */
+/* 48 */
 /***/ (function(module, exports) {
 
 if (typeof Object.create === 'function') {
@@ -10979,7 +10959,7 @@ if (typeof Object.create === 'function') {
 
 
 /***/ }),
-/* 50 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11003,13 +10983,13 @@ exports.default = setTimeoutUnref;
 
 
 /***/ }),
-/* 51 */
+/* 50 */
 /***/ (function(module, exports) {
 
 /* (ignored) */
 
 /***/ }),
-/* 52 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11089,7 +11069,7 @@ module.exports = function () {
 }();
 
 /***/ }),
-/* 53 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {
@@ -11163,7 +11143,7 @@ function config (name) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ }),
-/* 54 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11196,10 +11176,10 @@ function config (name) {
 
 module.exports = PassThrough;
 
-var Transform = __webpack_require__(33);
+var Transform = __webpack_require__(32);
 
 /*<replacement>*/
-var util = __webpack_require__(12);
+var util = __webpack_require__(13);
 util.inherits = __webpack_require__(9);
 /*</replacement>*/
 
@@ -11216,35 +11196,35 @@ PassThrough.prototype._transform = function (chunk, encoding, cb) {
 };
 
 /***/ }),
-/* 55 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(20);
 
 
 /***/ }),
-/* 56 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(7);
 
 
 /***/ }),
-/* 57 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(19).Transform
 
 
 /***/ }),
-/* 58 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(19).PassThrough
 
 
 /***/ }),
-/* 59 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11271,8 +11251,8 @@ module.exports = __webpack_require__(19).PassThrough
 
 
 
-var punycode = __webpack_require__(60);
-var util = __webpack_require__(62);
+var punycode = __webpack_require__(59);
+var util = __webpack_require__(61);
 
 exports.parse = urlParse;
 exports.resolve = urlResolve;
@@ -11347,7 +11327,7 @@ var protocolPattern = /^([a-z0-9.+-]+:)/i,
       'gopher:': true,
       'file:': true
     },
-    querystring = __webpack_require__(63);
+    querystring = __webpack_require__(62);
 
 function urlParse(url, parseQueryString, slashesDenoteHost) {
   if (url && util.isObject(url) && url instanceof Url) return url;
@@ -11983,7 +11963,7 @@ Url.prototype.parseHost = function() {
 
 
 /***/ }),
-/* 60 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module, global) {var __WEBPACK_AMD_DEFINE_RESULT__;/*! https://mths.be/punycode v1.4.1 by @mathias */
@@ -12519,10 +12499,10 @@ Url.prototype.parseHost = function() {
 
 }(this));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(61)(module), __webpack_require__(5)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(60)(module), __webpack_require__(5)))
 
 /***/ }),
-/* 61 */
+/* 60 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -12550,7 +12530,7 @@ module.exports = function(module) {
 
 
 /***/ }),
-/* 62 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12573,18 +12553,18 @@ module.exports = {
 
 
 /***/ }),
-/* 63 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-exports.decode = exports.parse = __webpack_require__(64);
-exports.encode = exports.stringify = __webpack_require__(65);
+exports.decode = exports.parse = __webpack_require__(63);
+exports.encode = exports.stringify = __webpack_require__(64);
 
 
 /***/ }),
-/* 64 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12675,7 +12655,7 @@ var isArray = Array.isArray || function (xs) {
 
 
 /***/ }),
-/* 65 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12767,7 +12747,7 @@ var objectKeys = Object.keys || function (obj) {
 
 
 /***/ }),
-/* 66 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12820,10 +12800,10 @@ function unixify(filepath) {
 function correctPath(filepath) {
   return unixify(filepath.replace(/^\\\\\?\\.:\\/, '\\'));
 }
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 67 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12837,6 +12817,29 @@ var fsProps = exports.fsProps = ['constants', 'F_OK', 'R_OK', 'W_OK', 'X_OK', 'S
 var fsSyncMethods = exports.fsSyncMethods = ['renameSync', 'ftruncateSync', 'truncateSync', 'chownSync', 'fchownSync', 'lchownSync', 'chmodSync', 'fchmodSync', 'lchmodSync', 'statSync', 'lstatSync', 'fstatSync', 'linkSync', 'symlinkSync', 'readlinkSync', 'realpathSync', 'unlinkSync', 'rmdirSync', 'mkdirSync', 'mkdirpSync', 'readdirSync', 'closeSync', 'openSync', 'utimesSync', 'futimesSync', 'fsyncSync', 'writeSync', 'readSync', 'readFileSync', 'writeFileSync', 'appendFileSync', 'existsSync', 'accessSync', 'fdatasyncSync', 'mkdtempSync'];
 
 var fsAsyncMethods = exports.fsAsyncMethods = ['rename', 'ftruncate', 'truncate', 'chown', 'fchown', 'lchown', 'chmod', 'fchmod', 'lchmod', 'stat', 'lstat', 'fstat', 'link', 'symlink', 'readlink', 'realpath', 'unlink', 'rmdir', 'mkdir', 'mkdirp', 'readdir', 'close', 'open', 'utimes', 'futimes', 'fsync', 'write', 'read', 'readFile', 'writeFile', 'appendFile', 'exists', 'access', 'fdatasync', 'mkdtemp', 'watchFile', 'unwatchFile', 'watch', 'createReadStream', 'createWriteStream'];
+
+/***/ }),
+/* 67 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+// simple mutable assign
+function assign () {
+  const args = [].slice.call(arguments).filter(i => i)
+  const dest = args.shift()
+  args.forEach(src => {
+    Object.keys(src).forEach(key => {
+      dest[key] = src[key]
+    })
+  })
+
+  return dest
+}
+
+module.exports = assign
+
 
 /***/ }),
 /* 68 */
@@ -13173,7 +13176,7 @@ function chownErOk (er) {
   return false
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 69 */
@@ -13185,7 +13188,7 @@ module.exports = {"O_RDONLY":0,"O_WRONLY":1,"O_RDWR":2,"S_IFMT":61440,"S_IFREG":
 /* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(process) {var Stream = __webpack_require__(28).Stream
+/* WEBPACK VAR INJECTION */(function(process) {var Stream = __webpack_require__(27).Stream
 
 module.exports = legacy
 
@@ -13304,7 +13307,7 @@ function legacy (fs) {
   }
 }
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 71 */
@@ -13323,7 +13326,7 @@ module.exports = {
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {
 
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const path = __webpack_require__(0)
 const invalidWin32Path = __webpack_require__(36).invalidWin32Path
 
@@ -13385,7 +13388,7 @@ function mkdirs (p, opts, callback, made) {
 
 module.exports = mkdirs
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 73 */
@@ -13394,7 +13397,7 @@ module.exports = mkdirs
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {
 
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const path = __webpack_require__(0)
 const invalidWin32Path = __webpack_require__(36).invalidWin32Path
 
@@ -13452,7 +13455,7 @@ function mkdirsSync (p, opts, made) {
 
 module.exports = mkdirsSync
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 74 */
@@ -13516,7 +13519,7 @@ exports.homedir = function () {
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {
 
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const path = __webpack_require__(0)
 const mkdirpSync = __webpack_require__(4).mkdirsSync
 const utimesSync = __webpack_require__(37).utimesMillisSync
@@ -13724,7 +13727,7 @@ function isSrcSubdir (src, dest) {
 
 module.exports = copySync
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 76 */
@@ -13733,7 +13736,7 @@ module.exports = copySync
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {
 
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const path = __webpack_require__(0)
 const assert = __webpack_require__(18)
 
@@ -14046,7 +14049,7 @@ function rmkidsSync (p, options) {
 module.exports = rimraf
 rimraf.sync = rimrafSync
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 77 */
@@ -14077,9 +14080,9 @@ module.exports = jsonFile
 
 /* WEBPACK VAR INJECTION */(function(Buffer) {var _fs
 try {
-  _fs = __webpack_require__(1)
+  _fs = __webpack_require__(2)
 } catch (_) {
-  _fs = __webpack_require__(13)
+  _fs = __webpack_require__(10)
 }
 
 function readFile (file, options, callback) {
@@ -14253,7 +14256,7 @@ module.exports = outputJson
 "use strict";
 
 
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const path = __webpack_require__(0)
 const mkdir = __webpack_require__(4)
 const jsonFile = __webpack_require__(21)
@@ -14285,7 +14288,7 @@ module.exports = outputJsonSync
 // this needs a cleanup
 
 const u = __webpack_require__(3).fromCallback
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const copy = __webpack_require__(35)
 const path = __webpack_require__(0)
 const remove = __webpack_require__(16).remove
@@ -14455,7 +14458,7 @@ module.exports = {
 "use strict";
 
 
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const path = __webpack_require__(0)
 const copySync = __webpack_require__(38).copySync
 const removeSync = __webpack_require__(16).removeSync
@@ -14581,7 +14584,7 @@ module.exports = {
 
 
 const u = __webpack_require__(3).fromCallback
-const fs = __webpack_require__(13)
+const fs = __webpack_require__(10)
 const path = __webpack_require__(0)
 const mkdir = __webpack_require__(4)
 const remove = __webpack_require__(16)
@@ -14667,7 +14670,7 @@ module.exports = {
 
 const u = __webpack_require__(3).fromCallback
 const path = __webpack_require__(0)
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const mkdir = __webpack_require__(4)
 const pathExists = __webpack_require__(6).pathExists
 
@@ -14723,7 +14726,7 @@ module.exports = {
 
 const u = __webpack_require__(3).fromCallback
 const path = __webpack_require__(0)
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const mkdir = __webpack_require__(4)
 const pathExists = __webpack_require__(6).pathExists
 
@@ -14791,7 +14794,7 @@ module.exports = {
 
 const u = __webpack_require__(3).fromCallback
 const path = __webpack_require__(0)
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const _mkdirs = __webpack_require__(4)
 const mkdirs = _mkdirs.mkdirs
 const mkdirsSync = _mkdirs.mkdirsSync
@@ -14863,7 +14866,7 @@ module.exports = {
 
 
 const path = __webpack_require__(0)
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const pathExists = __webpack_require__(6).pathExists
 
 /**
@@ -14968,7 +14971,7 @@ module.exports = {
 "use strict";
 
 
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 
 function symlinkType (srcpath, type, callback) {
   callback = (typeof type === 'function') ? type : callback
@@ -15007,7 +15010,7 @@ module.exports = {
 
 
 const u = __webpack_require__(3).fromCallback
-const fs = __webpack_require__(1)
+const fs = __webpack_require__(2)
 const path = __webpack_require__(0)
 const mkdir = __webpack_require__(4)
 const pathExists = __webpack_require__(6).pathExists
@@ -15048,5 +15051,3 @@ module.exports = {
 
 /***/ })
 /******/ ]);
-
-module.exports = lalala;
