@@ -3,7 +3,9 @@ coverage/
 test/
 .travis.yml
 appveyor.yml
-lib/**/__tests__/
-test/readme.md
-test.js
+lib/
+docs/
+test/
 .github/
+test.js
+yarn.lock

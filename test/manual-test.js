@@ -1,4 +1,4 @@
-const { fse , memfs } = require("./index");
+const { fse , memfs } = require("../isotropy-memfs-extra");
 
 const {vol, writeFileSync, readFileSync} = memfs;
 
