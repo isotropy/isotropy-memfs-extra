@@ -1,5 +1,5 @@
 {
-  "name": "memfs-fs-extra",
+  "name": "isotropy-memfs-extra",
   "version": "0.0.1",
   "description": "This is a clone of fs-extra that replaces fs with memfs. For documentation and everything else see fs-extra.",
   "homepage": "https://github.com/jprichardson/node-fs-extra",
